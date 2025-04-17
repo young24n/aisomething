@@ -4,6 +4,7 @@ import "./App.css";
 import calenderData from "./data/AcademicCalender";
 import graduationData from "./data/GraduationCertificationSystemInfo";
 import univData from "./data/AcademicInformation";
+import univMapInfo from "./data/UnivMapInfo.js";
 
 // 동적으로 univDepartment 폴더 내 모든 파일 가져오기
 const univDepartmentModules = import.meta.glob("./data/univDepartment/*.js", { eager: true });
@@ -18,6 +19,7 @@ const systemInstruction = `You are a helpful assistant with knowledge of these u
 2) GraduationCertificationSystemInfo: ${JSON.stringify(graduationData)},
 3) AcademicCalender: ${JSON.stringify(calenderData)}.
 4) UnivDepartment: ${JSON.stringify(univDepartmentData)}.
+5) UnivMapInfo: ${JSON.stringify(univMapInfo)}.
 Please answer questions based on this data.`;
 
 export function App() {
@@ -44,7 +46,9 @@ export function App() {
                   관련 서류에 대한 다운로드 링크를 가지고 있으면 제공해도 좋다.
                   제공된 정보에서 명확하게 지정된 방식과 다른 방식의 시도를 묻는다면 보통은 안된다고 답하면된다.
                   (예시)출석을 약봉투로 인정 가능한지? -> 진료확인서 제출이라는 명확한 방식이 이미 존재 만약 된다면 이것은 교수 개인의 재량권을 이용한 것
-                  사용자가 물어본 것에 대해서만 답변하고 관련된 항목의 전부를 출력해선 안된다.`,
+                  사용자가 물어본 것에 대해서만 답변하고 관련된 항목의 전부를 출력해선 안된다.
+                  학교홈페이지에는 공지는학사공지(수업/학적),장학공지,봉사공지,진로·취업공지가 존재한다
+                  사용자가 위치정보를 물어볼 때 사용자의 위치를 기반으로 가장 가까운 곳을 추천해준다.`,
                 },
               ],
             },
@@ -61,6 +65,7 @@ export function App() {
         setError("채팅을 시작할 수 없습니다.");
       }
     })();
+    
   }, []);
 
   const resetChat = () => {
@@ -92,6 +97,7 @@ export function App() {
       setIsLoading(false);
     }
   };
+  
 
   return (
     <div>
