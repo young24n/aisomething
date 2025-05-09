@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import model from "./model";
+import genAI from "./model";
 import "./App.css";
 import calenderData from "./data/AcademicCalender";
 import graduationData from "./data/GraduationCertificationSystemInfo";
 import univData from "./data/AcademicInformation";
 import univMapInfo from "./data/UnivMapInfo.js";
+
+const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-pro-001"});
 
 // 동적으로 univDepartment 폴더 내 모든 파일 가져오기
 const univDepartmentModules = import.meta.glob("./data/univDepartment/*.js", { eager: true });
@@ -28,6 +30,8 @@ export function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const chatRef = useRef(null);
+  // 추가: 메시지 박스 DOM 참조
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     (async () => {
@@ -68,6 +72,13 @@ export function App() {
     
   }, []);
 
+  // messages 업데이트 될 때마다 스크롤 하단으로 이동
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   const resetChat = () => {
     setMessages([]);
   };
@@ -103,6 +114,7 @@ export function App() {
     <div>
       <div>
         <div
+          ref={chatContainerRef} // 수정: 메시지 박스에 ref 추가
           style={{
             height: "300px",
             overflowY: "scroll",
