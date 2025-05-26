@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import genAI from "./model";
 import "./App.css";
-import SystemPrompt from "./data/SystemPrompt.js"
+import SystemPrompt from "./data/SystemPrompt.js";
 import calenderData from "./data/AcademicCalender.js";
 import graduationData from "./data/GraduationCertificationSystemInfo.js";
 import univData from "./data/AcademicInformation.js";
 import univMapInfo from "./data/UnivMapInfo.js";
+
+import Sidebar from './components/Sidebar';
+import ChatArea from './components/ChatArea';
 
 const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-pro-001"});
 
@@ -14,7 +17,7 @@ const univDepartmentModules = import.meta.glob("./data/univDepartment/*.js", { e
 const univDepartmentData = Object.keys(univDepartmentModules).reduce((acc, key) => {
   const moduleName = key.split("/").pop()?.replace(".js", ""); // 파일 이름 추출
   acc[moduleName] = univDepartmentModules[key].default; // 각 파일의 default export 가져오기
-  return acc; 
+  return acc;
 }, {});
 
 const systemInstruction = `You are a helpful assistant with knowledge of these university data sets:
@@ -26,120 +29,93 @@ const systemInstruction = `You are a helpful assistant with knowledge of these u
 Please answer questions based on this data.`;
 
 export function App() {
-  const [prompt, setPrompt] = useState("");
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const chatRef = useRef(null);
-  // 추가: 메시지 박스 DOM 참조
-  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const chatRef = useRef<any>(null);
 
+  // 초기화
   useEffect(() => {
     (async () => {
       try {
         chatRef.current = model.startChat({
           history: [
-            {
-              role: "user",
-              parts: [
-                {
-                  text: SystemPrompt,
-                },
-              ],
-            },
+            { role: "user", parts: [{ text: SystemPrompt }] },
             { role: "user", parts: [{ text: systemInstruction }] },
             { role: "model", parts: [{ text: "Understood. I have the university data." }] },
           ],
-          generationConfig: {
-          },
+          generationConfig: {},
         });
-
-        setMessages([{ role: "system", text: "챗봇 로딩됨." }]);
+        // 시스템 메시지 등록
+        setMessages([
+          {
+            id: Date.now(),
+            content: "챗봇 로딩 됨.",
+            sender: "system",
+          },
+        ]);
       } catch (err) {
         console.error("Failed to initialize chat:", err);
         setError("채팅을 시작할 수 없습니다.");
       }
     })();
-    
   }, []);
 
-  // messages 업데이트 될 때마다 스크롤 하단으로 이동
-  useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-    }
-  }, [messages]);
-
+  // 채팅 리셋
   const resetChat = () => {
     setMessages([]);
+    setError(null);
   };
 
-  const sendMessage = async () => {
-    if (!prompt.trim() || isLoading || !chatRef.current) return;
+  // 메시지 전송
+  const sendMessage = async (message: string) => {
+    if (!message.trim() || isLoading || !chatRef.current) return;
 
     setIsLoading(true);
     setError(null);
-    const userMessage = { role: "user", text: prompt };
+
+    // 사용자 메시지 추가
+    const userMessage = {
+      id: Date.now(),
+      content: message,
+      sender: "user",
+    };
     setMessages((prev) => [...prev, userMessage]);
-    setPrompt("");
 
     try {
-      const result = await chatRef.current.sendMessage(prompt);
+      // 모델에게 메시지 전송
+      const result = await chatRef.current.sendMessage(message);
       const response = await result.response;
       const responseText = response.text();
 
-      const assistantMessage = { role: "assistant", text: responseText };
-      setMessages((prev) => [...prev, assistantMessage]);
-      
+      // 챗봇 메시지 추가
+      const botMessage = {
+        id: Date.now() + 1,
+        content: responseText,
+        sender: "assistant",
+      };
+      setMessages((prev) => [...prev, botMessage]);
     } catch (err) {
       console.error("Error sending message:", err);
       setError("메시지 전송 중 오류가 발생했습니다.");
+      // 마지막에 추가한 사용자 메시지 삭제
       setMessages((prev) => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
     }
   };
-  
 
   return (
-    <div>
-      <div>
-        <div
-          ref={chatContainerRef} // 수정: 메시지 박스에 ref 추가
-          style={{
-            height: "300px",
-            overflowY: "scroll",
-            border: "1px solid #ccc",
-            marginBottom: "10px",
-            padding: "5px",
-          }}
-        >
-          {messages.map((msg, index) => (
-            <p
-              key={index}
-              style={{
-                textAlign: msg.role === "user" ? "right" : "left",
-                margin: "5px",
-              }}
-            >
-              <strong>{msg.role === "user" ? "나" : "챗봇"}:</strong> {msg.text}
-            </p>
-          ))}
-          {isLoading && <p>Loading...</p>}
-          {error && <p style={{ color: "red" }}>Error: {error}</p>}
-        </div>
+    <div className="flex h-screen bg-gray-100">
+      {/* 왼쪽 사이드바 */}
+      <Sidebar resetChat={resetChat} />
 
-        <p>내용 입력</p>
-        <input
-          style={{ width: "300px", marginRight: "10px", border: "1px solid #ccc", padding: "5px" }}
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          disabled={isLoading}
-        />
-        <button onClick={sendMessage} disabled={isLoading || !prompt.trim()}>
-          send
-        </button>
-      </div>
+      {/* 오른쪽 채팅 영역 */}
+      <ChatArea
+        messages={messages}
+        sendMessage={sendMessage}
+        isLoading={isLoading}
+      />
     </div>
   );
 }
