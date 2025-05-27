@@ -56,14 +56,6 @@ export function App() {
           ],
           generationConfig: {},
         });
-        // 시스템 메시지 등록
-        setMessages([
-          {
-            id: Date.now(),
-            content: "챗봇 로딩 됨.",
-            sender: "system",
-          },
-        ]);
       } catch (err) {
         console.error("Failed to initialize chat:", err);
         setError("채팅을 시작할 수 없습니다.");
