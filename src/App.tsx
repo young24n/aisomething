@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import genAI from "./model";
 import "./App.css";
 import SystemPrompt from "./data/SystemPrompt.js";
@@ -9,6 +9,7 @@ import univMapInfo from "./data/UnivMapInfo.js";
 
 import Sidebar from './components/Sidebar';
 import ChatArea from './components/ChatArea';
+import SettingsModal from './components/SettingsModal'; // 새로 추가할 설정 모달 컴포넌트
 
 const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-pro-001"});
 
@@ -29,10 +30,19 @@ const systemInstruction = `You are a helpful assistant with knowledge of these u
 Please answer questions based on this data.`;
 
 export function App() {
+  // 기존 상태들
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const chatRef = useRef<any>(null);
+
+  // 추가된 설정 관련 상태
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [settings, setSettings] = useState({
+    theme: 'light',
+    language: 'ko',
+    chatHistoryType: 'session',
+  });
 
   // 초기화
   useEffect(() => {
@@ -105,17 +115,34 @@ export function App() {
     }
   };
 
+  // 설정 열기/닫기
+  const openSettings = () => {
+    setIsSettingsOpen(true);
+  };
+  const closeSettings = () => {
+    setIsSettingsOpen(false);
+  };
+  const updateSettings = (newSettings: typeof settings) => {
+    setSettings(newSettings);
+  };
+
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* 왼쪽 사이드바 */}
-      <Sidebar resetChat={resetChat} />
+    <div className={`flex h-screen ${settings.theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+      {/* 왼쪽 사이드바에 resetChat, openSettings, settings 전달 */}
+      <Sidebar resetChat={resetChat} openSettings={openSettings} settings={settings} />
 
       {/* 오른쪽 채팅 영역 */}
       <ChatArea
         messages={messages}
         sendMessage={sendMessage}
         isLoading={isLoading}
+        settings={settings}
       />
+
+      {/* 설정 모달 표시 */}
+      {isSettingsOpen && (
+        <SettingsModal settings={settings} updateSettings={updateSettings} closeSettings={closeSettings}/>
+      )}
     </div>
   );
 }
