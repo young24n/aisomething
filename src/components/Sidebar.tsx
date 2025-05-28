@@ -1,4 +1,4 @@
-import { HomeIcon, MapIcon, BuildingIcon, SettingsIcon, RefreshCwIcon } from 'lucide-react';
+import { HomeIcon, MapIcon, MessageSquareMore, SettingsIcon, RefreshCwIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Sidebar = ({ resetChat, openSettings, settings }) => {
@@ -22,6 +22,10 @@ const Sidebar = ({ resetChat, openSettings, settings }) => {
         </h1>
       </div>
       <div className="flex-grow overflow-y-auto p-3">
+        <Link to="/" className={buttonClass}>
+          <MessageSquareMore className={iconClass} />
+          <span>대화하기</span>
+        </Link>
         <button onClick={resetChat} className={buttonClass}>
           <RefreshCwIcon className={iconClass} />
           <span>대화 초기화</span>
@@ -42,10 +46,6 @@ const Sidebar = ({ resetChat, openSettings, settings }) => {
         <Link to="/univ_map" className={buttonClass}>
           <MapIcon className={iconClass} />
           <span>학교 지도 보기</span>
-        </Link>
-        <Link to="/facilities" className={buttonClass}>
-          <BuildingIcon className={iconClass} />
-          <span>편의시설 위치</span>
         </Link>
       </div>
       <div className={`p-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>

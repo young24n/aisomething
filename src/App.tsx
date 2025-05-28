@@ -8,8 +8,10 @@ import univData from "./data/AcademicInformation.js";
 import univMapInfo from "./data/UnivMapInfo.js";
 
 import Sidebar from './components/Sidebar';
-import ChatArea from './components/ChatArea';
+import ChatArea from './pages/ChatArea';
 import SettingsModal from './components/SettingsModal'; // 새로 추가할 설정 모달 컴포넌트
+import { Route, Routes } from 'react-router-dom';
+import MapView from './pages/MapView.js';
 
 const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-pro-001"});
 
@@ -123,13 +125,12 @@ export function App() {
       {/* 왼쪽 사이드바에 resetChat, openSettings, settings 전달 */}
       <Sidebar resetChat={resetChat} openSettings={openSettings} settings={settings} />
 
-      {/* 오른쪽 채팅 영역 */}
-      <ChatArea
-        messages={messages}
-        sendMessage={sendMessage}
-        isLoading={isLoading}
-        settings={settings}
-      />
+      {/* 오른쪽 컴포넌트 영역 라우팅 */}
+      <Routes>
+        <Route path="/" element={<ChatArea messages={messages} sendMessage={sendMessage} settings={settings} isLoading={undefined} />} />
+        <Route path="/univ_map" element={<MapView settings={settings} />} />
+      </Routes>
+
 
       {/* 설정 모달 표시 */}
       {isSettingsOpen && (
