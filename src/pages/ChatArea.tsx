@@ -1,5 +1,5 @@
-import ChatInput from './ChatInput';
-import ChatMessage from './ChatMessage';
+import ChatInput from '../components/ChatInput';
+import ChatMessage from '../components/ChatMessage';
 import { LoaderCircle } from 'lucide-react'; // loading 스핀 디자인
 
 const ChatArea = ({ messages, sendMessage, isLoading, settings }) => {
