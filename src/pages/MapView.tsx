@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ArrowLeftIcon, MapIcon, BuildingIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { MapContent } from '../components/MapContent.jsx';
+import  MapContent  from '../components/MapContent.tsx';
 
 const MapView = ({ settings }) => {
   const [selectedMap, setSelectedMap] = useState('campus');
@@ -44,7 +44,7 @@ const MapView = ({ settings }) => {
           </div>
         </div>
         <div className="flex-1 p-6 overflow-y-auto">
-          {selectedMap === 'campus' ? <MapContent mapType={mapType1}/> : <MapContent mapType={mapType2}/>}
+          {selectedMap === 'campus' ? <MapContent mapType={mapType1} isDark={isDark}/> : <MapContent mapType={mapType2} isDark={isDark}/>}
         </div>
       </div>
     )

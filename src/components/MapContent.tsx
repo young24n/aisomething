@@ -1,4 +1,6 @@
-const MapContent = ({mapType}) => {
+import { MapIcon } from 'lucide-react';
+
+const MapContent = ({mapType, isDark}) => {
     return(
         <div className="h-full">
             <div className={`mb-4 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
